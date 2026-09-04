@@ -18,7 +18,10 @@ window.App = (function () {
   const $ = s => document.querySelector(s);
   const view = () => $('#view');
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  function go(h) { location.hash = h; }
+  function go(h) {
+    if (location.hash === h) { route(); return; }
+    location.hash = h;
+  }
   function toast(m) {
     const t = $('#toast'); t.textContent = m; t.classList.add('show');
     clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2400);
@@ -264,6 +267,7 @@ window.App = (function () {
 
       <div class="row gap8 wrap" style="margin-top:14px">
         <button class="btn btn-primary" onclick="App.startSession('${sub}',null)">🔀 Смешанная практика (10 заданий)</button>
+        <button class="btn" onclick="App.startReal('${sub}')">📌 Реальные задания ОГЭ (${(D[sub] || []).filter(q => q.real).length})</button>
         <button class="btn" onclick="go('#/test')">📋 Короткий вариант по таймеру</button>
         ${reviewList().filter(r => r.sub === sub).length ? `<button class="btn" onclick="App.reviewStart('${sub}')">🔁 Разобрать ошибки</button>` : ''}
       </div>
@@ -297,14 +301,16 @@ window.App = (function () {
     }
     if (q.type === 'number') {
       const val = opts && opts.value != null ? esc(opts.value) : '';
+      const enter = opts && opts.test ? 'App.testEnter()' : 'App.checkClick()';
       return `<div class="row gap10">
-        <input id="num-input" class="inp wide" inputmode="decimal" placeholder="Число. Напр.: 14, 0,7, −3, 1,2" value="${val}">
+        <input id="num-input" class="inp wide" inputmode="decimal" placeholder="Число. Напр.: 14, 0,7, −3, 1,2" value="${val}" onkeydown="if(event.key==='Enter'){event.preventDefault();${enter}}">
         ${opts && opts.test ? '' : '<button class="btn btn-primary" onclick="App.checkClick()">Проверить</button>'}
-      </div>${opts && opts.test ? '<div class="muted small" style="margin-top:8px">Ответ — число (звёздочка в условии не нужна). Ответ сохранится при переходе к другому заданию.</div>' : ''}`;
+      </div>${opts && opts.test ? '<div class="muted small" style="margin-top:8px">Ответ — число (звёздочка в условии не нужна). Ответ сохранится при переходе к другому заданию. Enter — дальше.</div>' : '<div class="muted small" style="margin-top:8px">Enter — проверить</div>'}`;
     }
     const val = opts && opts.value != null ? esc(opts.value) : '';
-    return `<textarea id="text-input" class="inp" rows="4" placeholder="Запиши ответ…">${val}</textarea>
-      ${opts && opts.test ? '<div class="muted small" style="margin-top:8px">Ответ сохранится при переходе к другому заданию.</div>' : '<button class="btn btn-primary" style="margin-top:8px" onclick="App.textSave()">Сохранить ответ</button>'}`;
+    const enterTa = opts && opts.test ? 'App.testEnter()' : 'App.textSave()';
+    return `<textarea id="text-input" class="inp" rows="4" placeholder="Запиши ответ…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();${enterTa}}">${val}</textarea>
+      ${opts && opts.test ? '<div class="muted small" style="margin-top:8px">Ответ сохранится при переходе к другому заданию. Enter — дальше.</div>' : '<div class="row gap8 wrap" style="margin-top:8px"><button class="btn btn-primary" onclick="App.textSave()">Сохранить ответ</button><span class="muted small">Enter — сохранить</span></div>'}`;
   }
 
   function renderSession() {
@@ -344,11 +350,12 @@ window.App = (function () {
 
     view().innerHTML = `
       <div class="row between wrap gap10">
-        <div class="row gap8">
-          <span class="chip">${SUBJ[sub].icon} ${SUBJ[sub].name}</span>
-          <span class="chip">${E.themeName(sub, q.theme)}</span>
-          ${q.diff >= 3 ? '<span class="chip bad">сложное</span>' : q.diff === 2 ? '<span class="chip warn">повышенное</span>' : ''}
-        </div>
+      <div class="row gap8 wrap">
+        <span class="chip">${SUBJ[sub].icon} ${SUBJ[sub].name}</span>
+        <span class="chip">${E.themeName(sub, q.theme)}</span>
+        ${q.real ? '<span class="chip ok">📌 реальный ОГЭ</span>' : ''}
+        ${q.diff >= 3 ? '<span class="chip bad">сложное</span>' : q.diff === 2 ? '<span class="chip warn">повышенное</span>' : ''}
+      </div>
         <button class="btn btn-mini" onclick="App.quitSession()">✕ Завершить</button>
       </div>
       <div class="card" style="margin-top:12px">
@@ -425,6 +432,11 @@ window.App = (function () {
     const q = curQ();
     window.AI.setContext(Object.assign({}, q, { _sub: session.sub }));
     go('#/ai');
+  }
+  function startReal(sub) {
+    const list = (D[sub] || []).filter(q => q.real);
+    if (!list.length) return toast('Реальных заданий пока нет');
+    startSession(sub, null, list);
   }
   function reviewStart(sub) {
     const list = reviewList().filter(r => (!sub || r.sub === sub) && r.sub === (sub || r.sub)).map(r => r.q);
@@ -503,7 +515,7 @@ window.App = (function () {
       </div>
       <div class="card" style="margin-top:12px"><div class="t-nav-wrap">${nav}</div></div>
       <div class="card qcard">
-        <div class="qtop"><span class="chip">${E.themeName(sub, q.theme)}</span><span class="muted small">Задание ${test.cur + 1} из ${test.list.length}</span></div>
+        <div class="qtop"><span class="chip">${E.themeName(sub, q.theme)}</span>${q.real ? '<span class="chip ok">📌 реальный ОГЭ</span>' : ''}<span class="muted small">Задание ${test.cur + 1} из ${test.list.length}</span></div>
         <div class="qprompt">${esc(q.prompt)}</div>
         ${inputHtml(q, { test: true, sel: test.sel[qq_id(q)], value: test.drafts[q.id] != null ? test.drafts[q.id] : '' })}
         <div class="row between" style="margin-top:16px">
@@ -536,6 +548,11 @@ window.App = (function () {
     test.sel[q.id] = i;
     test.drafts[q.id] = String(i);
     renderTestRun();
+  }
+  function testEnter() {
+    saveCurrentTestInput();
+    if (test.cur < test.list.length - 1) testGo(test.cur + 1);
+    else testFinish();
   }
   function startTimer() {
     clearInterval(testTimer);
@@ -895,8 +912,8 @@ window.App = (function () {
   });
 
   return {
-    goSubject, startSession, sel, checkClick, textSave, selfGrade, skip, next, quitSession, askAI,
-    reviewStart, redoOne, startTest, testGo, testSel, testFinish,
+    goSubject, startSession, startReal, sel, checkClick, textSave, selfGrade, skip, next, quitSession, askAI,
+    reviewStart, redoOne, startTest, testGo, testSel, testEnter, testFinish,
     continueLast, toHome, exportData, togglePlan, aiClear,
     saveSettings, resetAll, themeToggle
   };

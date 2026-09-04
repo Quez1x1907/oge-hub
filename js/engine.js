@@ -48,8 +48,8 @@ window.Engine = (function () {
     const dpr = window.devicePixelRatio || 1;
     const w = cv.clientWidth || 320, h = cv.clientHeight || 150;
     cv.width = w * dpr; cv.height = h * dpr;
-    const ctx = cv.getContext('2d');
-    ctx.scale(dpr, dpr);
+    const ctx = cv.getContext ? cv.getContext('2d') : null;
+    if (ctx) ctx.scale(dpr, dpr);
     return { ctx, w, h };
   }
 
@@ -67,6 +67,7 @@ window.Engine = (function () {
   function lineChart(cv, labels, values) {
     if (!cv) return;
     const { ctx, w, h } = prep(cv);
+    if (!ctx) return;
     const padL = 26, padB = 20, padT = 10, padR = 10;
     const max = Math.max(1, ...values);
     const X = i => padL + (w - padL - padR) * (labels.length <= 1 ? 0.5 : i / (labels.length - 1));
@@ -104,6 +105,7 @@ window.Engine = (function () {
   function bars(cv, items) {
     if (!cv) return;
     const { ctx, w, h } = prep(cv);
+    if (!ctx) return;
     if (!items.length) return;
     const max = Math.max(1, ...items.map(it => it.value));
     const bw = (w - 30) / items.length;

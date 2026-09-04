@@ -17,6 +17,7 @@ window.THEMES = {
     { id: 'accent', name: 'Ударения' },
     { id: 'nnzz', name: 'Н и НН' },
     { id: 'zz', name: 'З и С' },
+    { id: 'letters', name: 'Буквы и правописание (И/Ы, НН)' },
     { id: 'prefix', name: 'Приставки ПРИ/ПРЕ' },
     { id: 'morph', name: 'Части речи и словообразование' },
     { id: 'lex', name: 'Лексика и фразеология' },

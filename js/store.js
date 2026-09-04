@@ -8,6 +8,8 @@ window.Store = (function () {
     variants: [],
     streak: { last: '', count: 0 }
   });
+  let s = load();
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { } return s; }
   function load() {
     try {
       const raw = localStorage.getItem(KEY);
@@ -26,14 +28,13 @@ window.Store = (function () {
     } catch (e) { }
     return defaults();
   }
-  let s = load();
   function localDay(ts) {
     const d = new Date(ts);
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
   return {
     get: () => s,
-    save: () => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { } return s; },
+    save,
     recordAnswer: (sub, qid, theme, correct, ms, self) => {
       const a = s.answers[qid] || (s.answers[qid] = { attempts: 0, ok: 0, lastCorrect: false, self: 0, ts: 0 });
       a.attempts += 1;
@@ -49,10 +50,10 @@ window.Store = (function () {
         s.streak.count = (s.streak.last === localDay(y)) ? s.streak.count + 1 : 1;
         s.streak.last = today;
       }
-      this.save();
+      save();
     },
-    togglePlan: id => { s.plan[id] = !s.plan[id]; this.save(); },
-    addVariant: v => { s.variants.push(v); if (s.variants.length > 200) s.variants.shift(); this.save(); },
-    reset: () => { s = defaults(); this.save(); }
+    togglePlan: id => { s.plan[id] = !s.plan[id]; save(); },
+    addVariant: v => { s.variants.push(v); if (s.variants.length > 200) s.variants.shift(); save(); },
+    reset: () => { s = defaults(); save(); }
   };
 })();
