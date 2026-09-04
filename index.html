@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Пятёрка — тренажёр ОГЭ</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%234757e6'/%3E%3Ctext x='50' y='72' font-size='60' font-family='Arial' font-weight='bold' text-anchor='middle' fill='white'%3E5%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="side">
+    <div class="logo">
+      <div class="mark">5</div>
+      <div class="t">Пятёрка<small>тренажёр ОГЭ · 9 класс</small></div>
+    </div>
+    <nav class="nav">
+      <a href="#/" data-r="home"><span class="ico">🏠</span>Главная</a>
+      <div class="sep">Предметы</div>
+      <a href="#/subject/math" data-r="s:math"><span class="ico">🔢</span>Математика</a>
+      <a href="#/subject/russian" data-r="s:russian"><span class="ico">📝</span>Русский язык</a>
+      <a href="#/subject/social" data-r="s:social"><span class="ico">⚖️</span>Обществознание</a>
+      <a href="#/subject/informatics" data-r="s:informatics"><span class="ico">💻</span>Информатика</a>
+      <div class="sep">Подготовка</div>
+      <a href="#/test" data-r="test"><span class="ico">📋</span>Вариант</a>
+      <a href="#/stats" data-r="stats"><span class="ico">📊</span>Статистика</a>
+      <a href="#/plan" data-r="plan"><span class="ico">🗓️</span>План</a>
+      <a href="#/ai" data-r="ai"><span class="ico">🤖</span>ИИ-репетитор</a>
+      <a href="#/settings" data-r="settings"><span class="ico">⚙️</span>Настройки</a>
+    </nav>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="title" id="top-title">Главная</div>
+      <div class="grow"></div>
+      <span class="chip" id="top-streak" title="Серия дней занятий">🔥 0</span>
+      <button class="btn btn-mini" id="top-theme" onclick="App.themeToggle()">🌙</button>
+    </header>
+    <main class="view" id="view"></main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="js/store.js"></script>
+<script src="js/data/themes.js"></script>
+<script src="js/data/math.js"></script>
+<script src="js/data/russian.js"></script>
+<script src="js/data/social.js"></script>
+<script src="js/data/informatics.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
